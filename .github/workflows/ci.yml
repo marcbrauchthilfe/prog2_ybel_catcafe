@@ -1,0 +1,37 @@
+name: Cat Cafe Pipeline
+
+on:
+    push:
+        branches: [master]
+    workflow_dispatch:
+
+jobs:
+    quality-check:
+        name: Build, Test and Formatting Check
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
+
+            - name: Set up Java 25
+              uses: actions/setup-java@v5
+              with:
+                  distribution: temurin
+                  java-version: 25
+                  cache: gradle
+
+            - name: Set up Gradle
+              uses: gradle/actions/setup-gradle@v5
+
+            - name: Make Gradle wrapper executable
+              run: chmod +x ./gradlew
+
+            - name: Compile project
+              run: ./gradlew compileJava --no-daemon
+
+            - name: Run JUnit tests
+              run: ./gradlew test --no-daemon
+
+            - name: Verify code formatting with Spotless
+              run: ./gradlew spotlessCheck --no-daemon
